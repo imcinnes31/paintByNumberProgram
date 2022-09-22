@@ -1,5 +1,14 @@
 {% extends "paintByNumberMeApp/layout.html" %}
 
 {% block body %}
-    This is the page to upload the picture
+    <div>
+        <h2>Upload a picture to convert to paint by number:</h2>
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+                <input type="file" name="upload" accept="image/*">
+                <br>
+                <button type="submit">Submit</button>
+        </form>
+    </div>
+
 {% endblock %}

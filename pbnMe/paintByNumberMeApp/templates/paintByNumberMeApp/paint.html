@@ -1,0 +1,13 @@
+{% extends "paintByNumberMeApp/layout.html" %}
+
+{% block body %}
+    <div>
+        <h2>Here is your picture:</h2>
+        {% if file_url %}
+        <img src="{{ file_url }}">
+        {% else %}
+            <p>Nothing was uploaded</p>
+        {% endif %}
+    </div>
+
+{% endblock %}
