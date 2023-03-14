@@ -1,0 +1,49 @@
+{% extends "paintByNumberMeApp/layout.html" %}
+{% load mathfilters %}
+
+{% block body %}
+    <!-- {% with number=100 %}
+        <p>{{number|stringformat:"i"|length}}</p>
+    {% endwith %} -->
+    <div style="position: relative;">
+        <img src="{{ test_pict }}">
+        {% for area in pixels %}
+            {% if area.areaSize >= 0 %}
+                {% with area.colorNumber|stringformat:"i"|length as digitSize %}
+                    {% with area.areaSize|div:digitSize|floatformat:"0" as charWidth %}
+                        {% with charWidth|div:3|mul:4|floatformat:"0" as fontSize %}
+                            {% with area.areaSize|div:4|mul:3|div:2|floatformat:"0" as singleDigitXOffset %}
+                                {% with charWidth|mul:digitSize|div:2|floatformat:"0" as multiDigitXOffset %}
+                                    {% with area.areaSize|div:2|floatformat:"0" as singleDigitYOffset %}
+                                        {% with fontSize|div:2|floatformat:"0" as multiDigitYOffset %}
+                                            {% if fontSize|add:0 >= 7 %}
+                                                <div id="paintArea{{area.paintArea}}" style="font-size:{% if digitSize == 1 %}{{area.areaSize}}{% else %}{{fontSize}}{% endif %}px;font-family:Arial, Helvetica, sans-serif;position:absolute;top:{% if digitSize == 1 %}{{area.yCenter|sub:singleDigitYOffset}}{% else %}{{area.yCenter|sub:multiDigitYOffset}}{% endif %}px;left:{% if digitSize == 1 %}{{area.xCenter|sub:singleDigitXOffset}}{% else %}{{area.xCenter|sub:multiDigitXOffset}}{% endif %}px;">
+                                                    {{area.colorNumber}}
+                                                </div>
+                                            {% endif %}
+                                        {% endwith %}
+                                    {% endwith %}
+                                {% endwith %}
+                            {% endwith %}
+                        {% endwith %}
+                    {% endwith %}
+                {% endwith %}
+                <!-- <div style="font-size:15px;font-family:Arial, Helvetica, sans-serif;position:absolute;top:{{area.yCenter}}px;left:{{area.xCenter}}px;">
+                    {{area.colorNumber}}
+                </div> -->
+            {% endif %}
+        {% endfor %}
+    </div>
+    <div style="height:90px;width:434px;border:1px solid black;overflow-x:scroll;overflow-y:hidden;white-space: nowrap;">
+        {% for key, values in colorPalette.items %}
+            <div style="border-radius:25px;display:inline-block;margin:10px;background-color:{{values.colorHue}};width:50px;height:50px;border:1px solid black;text-align:center;vertical-align:middle;">
+                {% comment %} {% if values.shade == 'dark' %}
+                    <p style="color:white;font-family:Arial, Helvetica, sans-serif;font-size:18px;font-weight:bold;">{{key}}</p>
+                {% else %}
+                    <p style="font-family:Arial, Helvetica, sans-serif;font-size:18px;font-weight:bold;">{{key}}</p>
+                {% endif %} {% endcomment %}
+                <p style="{% if values.shade == 'dark'%}color:white;{% endif %}font-family:Arial, Helvetica, sans-serif;font-size:18px;font-weight:bold;">{{key}}</p>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}

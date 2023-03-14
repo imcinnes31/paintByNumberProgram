@@ -11,6 +11,7 @@ def convert(pictureFile):
     difficultyChoice = 100
     difficulty = ((105 - difficultyChoice) / 5)**3
 
+    #set file names to put in media storage
     fileName = pictureFile.replace('/media','media')
     fileName2 = fileName.replace('.jpg','')
     openedFile = fileName2.replace('/', '/result') + '1.png'
@@ -93,6 +94,7 @@ def convert(pictureFile):
     else:
         maxFactor = 6
 
+    #PROCEDURE TO GET RID OF SMALL PIXEL AREAS
     for redo in range(1,2):
 
         for factor in range(1,maxFactor):
@@ -319,6 +321,83 @@ def convert(pictureFile):
 
     im.save(renderedFile)
 
+    testIM = Image.open(renderedFile)
+
+    #NEW SECTION: divide pict into areas
+
+    xSize = testIM.size[0]
+    ySize = testIM.size[1]
+    pixT = testIM.load()
+    imageAreas = [[0 for x in range(xSize)] for y in range(ySize)]
+
+    print("dividing picture up into areas")
+    currentArea = 0
+    for x in range(0,xSize):
+        currentColor = NULL
+        for y in range(0,ySize):
+            if (pixT[x,y] != currentColor):
+                currentArea = currentArea + 1
+                currentColor = pixT[x,y]
+
+            imageAreas[y][x] = currentArea
+
+    while(True):
+        changed = False
+
+        for y in range(0,ySize):
+            for x in range(0,xSize):
+                if imageStatus[x][y] != 'outline':
+                    if x < xSize - 1 and imageStatus[x + 1][y] != 'outline' and pixT[x,y] == pixT[x + 1,y]:
+                        if imageAreas[y][x] < imageAreas[y][x + 1]:
+                            imageAreas[y][x + 1] = imageAreas[y][x]
+                            changed = True
+                        elif imageAreas[y][x] > imageAreas[y][x + 1]:
+                            imageAreas[y][x] = imageAreas[y][x + 1]
+                            changed = True
+                    if y < ySize - 1 and imageStatus[x][y + 1] != 'outline' and pixT[x,y] == pixT[x,y + 1]:
+                        if imageAreas[y][x] < imageAreas[y + 1][x]:
+                            imageAreas[y + 1][x] = imageAreas[y][x]
+                            changed = True
+                        elif imageAreas[y][x] > imageAreas[y + 1][x]:
+                            imageAreas[y][x] = imageAreas[y + 1][x]
+                            changed = True
+
+        for y in range(ySize - 1, 0 - 1, -1):
+            for x in range(xSize - 1, 0 - 1, -1):
+                if imageStatus[x][y] != 'outline':
+                    if x > 0 and imageStatus[x - 1][y] != 'outline' and pixT[x,y] == pixT[x - 1,y]:
+                        if imageAreas[y][x] < imageAreas[y][x - 1]:
+                            imageAreas[y][x - 1] = imageAreas[y][x]
+                            changed = True
+                        elif imageAreas[y][x] > imageAreas[y][x - 1]:
+                            imageAreas[y][x] = imageAreas[y][x - 1]
+                            changed = True
+                    if y > 0 and imageStatus[x][y - 1] != 'outline' and pixT[x,y] == pixT[x,y - 1]:
+                        if imageAreas[y][x] < imageAreas[y - 1][x]:
+                            imageAreas[y - 1][x] = imageAreas[y][x]
+                            changed = True
+                        elif imageAreas[y][x] > imageAreas[y - 1][x]:
+                            imageAreas[y][x] = imageAreas[y - 1][x]
+                            changed = True
+
+        if changed == False:
+            break
+
+    currentArea = 0
+    colorDict = {}
+
+    print("making list of areas")
+    for x in range(0,xSize):
+        for y in range(0,ySize):
+            if imageStatus[x][y] != 'outline':
+                if imageAreas[y][x] != currentArea:
+                    currentArea = imageAreas[y][x]
+                    if pixT[x,y] not in colorDict.keys():
+                        colorDict[pixT[x,y]] = {}
+                    if imageAreas[y][x] not in colorDict[pixT[x,y]].keys():
+                        colorDict[pixT[x,y]][imageAreas[y][x]] = []
+                colorDict[pixT[x,y]][imageAreas[y][x]].append([x,y])
+
     im2 = Image.open(renderedFile)
     pix2 = im2.load()
 
@@ -444,7 +523,6 @@ def convert(pictureFile):
 
     im2.save(outlinedFile)
     print(outlinedFile + ': ' + str(len(colorList) + len(greyList)) + ' ' + str(len(greyList)) + ' grey,' + str(reduced))
-
 
 
 
@@ -842,3 +920,86 @@ def convert(pictureFile):
     # im2.save(altoutlinedFile)
     # print(altoutlinedFile + ': ' + str(len(colorList) + len(greyList)) + ' ' + str(len(greyList)) + ' grey,' + str(reduced))
 
+def testDivide(file):
+    testIM = Image.open(file)
+
+    xSize = testIM.size[0]
+    ySize = testIM.size[1]
+    pix = testIM.load()
+    imageAreas = [[0 for x in range(xSize)] for y in range(ySize)]
+    imageStatus = [[0 for x in range(xSize)] for y in range(ySize)]
+
+    currentArea = 0
+    for x in range(0,xSize):
+        for y in range(0,ySize):
+            imageStatus[y][x] = 'none'
+
+    currentArea = 0
+    for x in range(0,xSize):
+        currentColor = NULL
+        for y in range(0,ySize):
+            if (pix[x,y] != currentColor):
+                currentArea = currentArea + 1
+                currentColor = pix[x,y]
+
+            imageAreas[y][x] = currentArea
+
+    while(True):
+        changed = False
+
+        for y in range(0,ySize):
+            for x in range(0,xSize):
+                if imageStatus[y][x] != 'outline':
+                    if x < xSize - 1 and imageStatus[y][x + 1] != 'outline' and pix[x,y] == pix[x + 1,y]:
+                        if imageAreas[y][x] < imageAreas[y][x + 1]:
+                            imageAreas[y][x + 1] = imageAreas[y][x]
+                            changed = True
+                        elif imageAreas[y][x] > imageAreas[y][x + 1]:
+                            imageAreas[y][x] = imageAreas[y][x + 1]
+                            changed = True
+                    if y < ySize - 1 and imageStatus[y + 1][x] != 'outline' and pix[x,y] == pix[x,y + 1]:
+                        if imageAreas[y][x] < imageAreas[y + 1][x]:
+                            imageAreas[y + 1][x] = imageAreas[y][x]
+                            changed = True
+                        elif imageAreas[y][x] > imageAreas[y + 1][x]:
+                            imageAreas[y][x] = imageAreas[y + 1][x]
+                            changed = True
+
+        for y in range(ySize - 1, 0 - 1, -1):
+            for x in range(xSize - 1, 0 - 1, -1):
+                if imageStatus[y][x] != 'outline':
+                    if x > 0 and imageStatus[y][x - 1] != 'outline' and pix[x,y] == pix[x - 1,y]:
+                        if imageAreas[y][x] < imageAreas[y][x - 1]:
+                            imageAreas[y][x - 1] = imageAreas[y][x]
+                            changed = True
+                        elif imageAreas[y][x] > imageAreas[y][x - 1]:
+                            imageAreas[y][x] = imageAreas[y][x - 1]
+                            changed = True
+                    if y > 0 and imageStatus[y - 1][x] != 'outline' and pix[x,y] == pix[x,y - 1]:
+                        if imageAreas[y][x] < imageAreas[y - 1][x]:
+                            imageAreas[y - 1][x] = imageAreas[y][x]
+                            changed = True
+                        elif imageAreas[y][x] > imageAreas[y - 1][x]:
+                            imageAreas[y][x] = imageAreas[y - 1][x]
+                            changed = True
+
+        if changed == False:
+            break
+
+    currentArea = 0
+    colorDict = {}
+
+    for x in range(0,xSize):
+        for y in range(0,ySize):
+            if imageStatus[y][x] != 'outline':
+                if imageAreas[y][x] != currentArea:
+                    currentArea = imageAreas[y][x]
+                    if pix[x,y] not in colorDict.keys():
+                        colorDict[pix[x,y]] = {}
+                    if imageAreas[y][x] not in colorDict[pix[x,y]].keys():
+                        colorDict[pix[x,y]][imageAreas[y][x]] = []
+                colorDict[pix[x,y]][imageAreas[y][x]].append([x,y])
+
+    return colorDict
+
+    
